@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TARGET FAMILY | Система набора подписчиков</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Премиальная шрифтовая пара -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Manrope', 'sans-serif'],
+                    },
+                    colors: {
+                        bg: '#F8FAFC', // Очень светлый серо-голубой (Slate 50)
+                        surface: '#FFFFFF', // Чистый белый для карточек и блоков
+                        dark: '#0F172A', // Темно-синий/серый для заголовков (Slate 900)
+                        textMain: '#475569', // Основной текст (Slate 600)
+                        accent: '#10B981', // Премиальный изумрудно-зеленый
+                        accentDark: '#059669',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --shadow-soft: 0 20px 60px rgba(15, 23, 42, 0.08);
+            --shadow-accent: 0 20px 50px rgba(16, 185, 129, 0.18);
+        }
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(16, 185, 129, 0.08), transparent 28%),
+                linear-gradient(180deg, #F8FAFC 0%, #F8FAFC 60%, #F1F5F9 100%);
+            color: #475569;
+            -webkit-font-smoothing: antialiased;
+        }
+        section,
+        nav,
+        footer {
+            position: relative;
+            z-index: 1;
+        }
+        /* Мягкое свечение на фоне для светлой темы */
+        .glow-bg {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, rgba(248, 250, 252, 0) 70%);
+            top: -100px;
+            right: -100px;
+            z-index: -1;
+            border-radius: 50%;
+        }
+        .glow-bg-2 {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(148, 163, 184, 0.1) 0%, rgba(248, 250, 252, 0) 70%);
+            bottom: 10%;
+            left: -300px;
+            z-index: -1;
+            border-radius: 50%;
+        }
+        .mesh-overlay {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+            background-size: 42px 42px;
+            mask-image: radial-gradient(circle at center, black 32%, transparent 82%);
+            pointer-events: none;
+            opacity: 0.45;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: var(--shadow-soft);
+        }
+        .floating-orb {
+            position: absolute;
+            border-radius: 999px;
+            filter: blur(10px);
+            opacity: 0.7;
+            animation: floatY 8s ease-in-out infinite;
+        }
+        .floating-orb--one {
+            width: 140px;
+            height: 140px;
+            top: 8%;
+            right: 8%;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.35), rgba(16, 185, 129, 0));
+        }
+        .floating-orb--two {
+            width: 180px;
+            height: 180px;
+            left: -5%;
+            bottom: 12%;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.18), rgba(14, 165, 233, 0));
+            animation-delay: -2s;
+        }
+        .tilt-card {
+            transform: perspective(1600px) rotateY(-9deg) rotateX(3deg);
+            transform-style: preserve-3d;
+        }
+        .metric-card {
+            transition:
+                transform 0.5s var(--ease-out-expo),
+                box-shadow 0.5s var(--ease-out-expo),
+                border-color 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-soft);
+            border-color: rgba(16, 185, 129, 0.24);
+        }
+        .cta-pulse {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+        }
+        .cta-pulse::after {
+            content: "";
+            position: absolute;
+            inset: -120%;
+            background: linear-gradient(120deg, transparent 35%, rgba(255, 255, 255, 0.42) 50%, transparent 65%);
+            transform: translateX(-55%) rotate(12deg);
+            animation: ctaShine 5.5s linear infinite;
+            z-index: -1;
+        }
+        [data-reveal] {
+            opacity: 0;
+            transform: translateY(32px) scale(0.985);
+            transition:
+                opacity 0.8s var(--ease-out-expo),
+                transform 0.8s var(--ease-out-expo);
+            transition-delay: var(--reveal-delay, 0ms);
+            will-change: opacity, transform;
+        }
+        [data-reveal].is-visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        [data-reveal="left"] {
+            transform: translateX(-42px);
+        }
+        [data-reveal="right"] {
+            transform: translateX(42px);
+        }
+        [data-reveal="zoom"] {
+            transform: translateY(26px) scale(0.94);
+        }
+        [data-reveal="left"].is-visible,
+        [data-reveal="right"].is-visible,
+        [data-reveal="zoom"].is-visible {
+            transform: translate(0, 0) scale(1);
+        }
+        @keyframes floatY {
+            0%, 100% { transform: translate3d(0, 0, 0); }
+            50% { transform: translate3d(0, -18px, 0); }
+        }
+        @keyframes ctaShine {
+            from { transform: translateX(-55%) rotate(12deg); }
+            to { transform: translateX(55%) rotate(12deg); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+            *,
+            *::before,
+            *::after {
+                animation: none !important;
+                transition: none !important;
+            }
+            [data-reveal] {
+                opacity: 1;
+                transform: none !important;
+            }
+        }
+        @media (max-width: 1023px) {
+            .tilt-card {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body class="relative overflow-x-hidden selection:bg-accent selection:text-white">
+
+    <div class="glow-bg"></div>
+    <div class="glow-bg-2"></div>
+    <div class="mesh-overlay"></div>
+
+    <!-- Навигация -->
+    <nav class="fixed w-full z-50 top-0 border-b border-gray-200 bg-white/80 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-accent rounded-sm flex items-center justify-center text-white font-bold text-xl shadow-sm">
+                    T
+                </div>
+                <span class="font-bold text-xl tracking-tight text-dark">TARGET FAMILY</span>
+            </div>
+            <div class="hidden md:flex gap-8 text-sm font-medium text-textMain">
+                <a href="#problem" class="hover:text-accent transition">Проблема</a>
+                <a href="#solution" class="hover:text-accent transition">Система</a>
+                <a href="#for-whom" class="hover:text-accent transition">Для кого</a>
+                <a href="#process" class="hover:text-accent transition">Процесс</a>
+            </div>
+            <a href="#cta" class="hidden md:inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-dark rounded-full hover:bg-gray-800 transition shadow-sm">
+                Обсудить проект
+            </a>
+        </div>
+    </nav>
+
+    <!-- ЭКРАН 1: Главный оффер (Hero-экран) -->
+    <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+                
+                <div class="max-w-2xl" data-reveal="left">
+                    <div class="flex flex-wrap gap-2 mb-8">
+                        <span class="px-3 py-1 text-xs font-medium border border-gray-200 bg-white rounded-full text-textMain shadow-sm">Экспертам</span>
+                        <span class="px-3 py-1 text-xs font-medium border border-gray-200 bg-white rounded-full text-textMain shadow-sm">Обучающим проектам</span>
+                        <span class="px-3 py-1 text-xs font-medium border border-gray-200 bg-white rounded-full text-textMain shadow-sm">Сфере услуг</span>
+                        <span class="px-3 py-1 text-xs font-medium border border-gray-200 bg-white rounded-full text-textMain shadow-sm">B2B</span>
+                        <span class="px-3 py-1 text-xs font-medium border border-gray-200 bg-white rounded-full text-textMain shadow-sm">Локальному бизнесу</span>
+                    </div>
+                    
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] mb-6 text-dark">
+                        Подписчики в MAX из <br class="hidden lg:block"/>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accentDark">Яндекс.Директа</span> и ВКонтакте
+                    </h1>
+                    
+                    <p class="text-lg text-textMain mb-10 leading-relaxed max-w-xl">
+                        Я не просто наливаю трафик, а собираю рабочую связку: реклама → прогревающий лендинг → подписка в MAX. Превращаю холодные переходы в вашу лояльную аудиторию и реальные заявки.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="#cta" class="cta-pulse inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-accent rounded-full hover:bg-accentDark transition shadow-[0_8px_25px_rgba(16,185,129,0.3)] hover:shadow-[0_8px_25px_rgba(16,185,129,0.4)]">
+                            Получить план запуска
+                        </a>
+                    </div>
+                </div>
+
+                <div class="relative h-[500px] lg:h-[650px] w-full rounded-3xl overflow-hidden border border-gray-200 shadow-2xl shadow-gray-200/50 tilt-card" data-reveal="right">
+                    <div class="floating-orb floating-orb--one"></div>
+                    <div class="floating-orb floating-orb--two"></div>
+                    <!-- КОММЕНТАРИЙ ДЛЯ ОБРАБОТКИ: Для светлой темы сюда идеально подойдет фото в белом костюме (Костя 2). Рекомендую вырезать фигуру и поместить на абстрактный светлый фон (как в зеленом референсе Дизайн 2) с легкой 3D-графикой. -->
+                    <img src="Костя 2.png" alt="Target Family Founder" class="w-full h-full object-cover scale-[1.02]" loading="eager">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent opacity-60"></div>
+                    <div class="absolute left-6 right-6 bottom-6 glass-card rounded-[2rem] p-5 md:p-6">
+                        <div class="flex items-center justify-between gap-6">
+                            <div>
+                                <div class="text-xs uppercase tracking-[0.24em] text-textMain mb-2">Система</div>
+                                <div class="text-xl md:text-2xl font-bold text-dark">Реклама -> лендинг -> подписка -> заявка</div>
+                            </div>
+                            <div class="hidden sm:flex w-14 h-14 rounded-2xl bg-accent text-white items-center justify-center shadow-[0_18px_40px_rgba(16,185,129,0.28)]">
+                                <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 7h8m0 0v8m0-8L10 18l-5-5" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
+    <!-- ЭКРАН 2: Проблема и боль клиента -->
+    <section id="problem" class="py-20 lg:py-32 bg-surface border-y border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mb-16">
+                <h2 class="text-3xl lg:text-5xl font-bold mb-6 text-dark">Почему нельзя вести трафик <span class="text-accent">сразу в MAX?</span></h2>
+                <p class="text-lg text-textMain">Большинство запускает рекламу и даёт прямую ссылку на подписку. Итог всегда один: трафик уходит, подписок нет, бюджет слит, а аналитика слепая.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Карточка 1 -->
+                <div class="bg-bg p-8 rounded-3xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-300" data-reveal="zoom" style="--reveal-delay: 0ms;">
+                    <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-gray-100">
+                        <svg class="w-7 h-7 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-dark">Дорогие подписчики</h3>
+                    <p class="text-textMain leading-relaxed">Вы платите за клики, а не за целевое действие. Трафик расходуется впустую без промежуточного этапа.</p>
+                </div>
+                <!-- Карточка 2 -->
+                <div class="bg-bg p-8 rounded-3xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-300" data-reveal="zoom" style="--reveal-delay: 120ms;">
+                    <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-gray-100">
+                        <svg class="w-7 h-7 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-dark">Нет доверия</h3>
+                    <p class="text-textMain leading-relaxed">Холодный трафик из рекламы просто не готов сразу подписаться. Им нужны аргументы и смыслы.</p>
+                </div>
+                <!-- Карточка 3 -->
+                <div class="bg-bg p-8 rounded-3xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-300" data-reveal="zoom" style="--reveal-delay: 240ms;">
+                    <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-gray-100">
+                        <svg class="w-7 h-7 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-dark">Нет системы догрева</h3>
+                    <p class="text-textMain leading-relaxed">Люди уходят навсегда, потому что вы их не зацепили и не показали ценность своего продукта или услуги.</p>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+                <a href="#cta" class="inline-flex items-center text-accent font-semibold hover:text-accentDark transition group border-b border-accent/30 hover:border-accent pb-1">
+                    Узнать, как не терять трафик 
+                    <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ЭКРАН 3: Решение (Как работает система) -->
+    <section id="solution" class="py-20 lg:py-32">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                
+                <div class="order-2 lg:order-1 relative h-[600px] rounded-3xl overflow-hidden shadow-xl border border-gray-200 bg-white" data-reveal="left">
+                    <!-- КОММЕНТАРИЙ ДЛЯ ОБРАБОТКИ: Отличное фото. В светлом дизайне будет круто смотреться, если слегка осветлить фон или вырезать вас и поместить на фон в стиле "Glassmorphism" (стекло, полупрозрачные карточки интерфейсов). -->
+                    <img src="Костя 4.png" alt="Система работы" class="w-full h-full object-cover" loading="lazy">
+                </div>
+
+                <div class="order-1 lg:order-2" data-reveal="right">
+                    <h2 class="text-3xl lg:text-5xl font-bold mb-6 leading-tight text-dark">Не просто трафик. <br> А система набора подписчиков <span class="text-accent">из 5 шагов</span></h2>
+                    <p class="text-lg text-textMain mb-10">Мой подход: сначала мы объясняем ценность на лендинге, снимаем недоверие, и только потом аккуратно переводим человека в подписку.</p>
+
+                    <!-- Bento Stats -->
+                    <div class="grid grid-cols-2 gap-4 mb-10">
+                        <div class="metric-card bg-surface border border-gray-200 p-6 rounded-2xl shadow-sm">
+                            <div class="text-4xl font-bold text-dark mb-2">37%</div>
+                            <div class="text-sm text-textMain">Средний рост базы за счет промежуточного этапа</div>
+                        </div>
+                        <div class="metric-card bg-surface border border-gray-200 p-6 rounded-2xl shadow-sm">
+                            <div class="text-4xl font-bold text-dark mb-2">62%</div>
+                            <div class="text-sm text-textMain">Конверсия в заявку после правильного догрева</div>
+                        </div>
+                        <div class="metric-card bg-surface border border-gray-200 p-6 rounded-2xl col-span-2 flex items-center justify-between shadow-sm">
+                            <div>
+                                <div class="text-4xl font-bold text-accent mb-2">x3</div>
+                                <div class="text-sm text-textMain">Разница в окупаемости по сравнению с прямой рекламой</div>
+                            </div>
+                            <div class="w-16 h-16 bg-bg border border-gray-100 rounded-full flex items-center justify-center">
+                                <svg class="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="https://t.me/your_telegram" target="_blank" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-dark bg-white border border-gray-200 shadow-sm rounded-full hover:bg-gray-50 transition">
+                        Написать в Telegram
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ЭКРАН 4: Квалификация (Для кого) -->
+    <section id="for-whom" class="py-20 lg:py-32 bg-surface border-y border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl lg:text-5xl font-bold mb-6 text-dark">Кому идеально подходит <span class="text-accent">эта система?</span></h2>
+                <p class="text-lg text-textMain">Тем, кому важно собрать свою лояльную аудиторию, а не просто получить разовый клик и забыть о клиенте.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Card -->
+                <div class="bg-bg border border-gray-200 p-8 rounded-3xl relative overflow-hidden group hover:shadow-lg transition" data-reveal="zoom" style="--reveal-delay: 0ms;">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-white rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110 shadow-sm border-b border-l border-gray-100"></div>
+                    <h3 class="text-xl font-bold mb-4 relative z-10 text-dark">Экспертам</h3>
+                    <p class="text-sm text-textMain relative z-10 leading-relaxed">Монетизируйте свои знания через теплую базу. Собирайте лояльных слушателей.</p>
+                </div>
+                <!-- Card -->
+                <div class="bg-bg border border-gray-200 p-8 rounded-3xl relative overflow-hidden group hover:shadow-lg transition" data-reveal="zoom" style="--reveal-delay: 120ms;">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-white rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110 shadow-sm border-b border-l border-gray-100"></div>
+                    <h3 class="text-xl font-bold mb-4 relative z-10 text-dark">Долгий цикл</h3>
+                    <p class="text-sm text-textMain relative z-10 leading-relaxed">Бизнесу с долгим циклом принятия решения — прогревайте клиентов до готовности купить.</p>
+                </div>
+                <!-- Card -->
+                <div class="bg-bg border border-accent/30 p-8 rounded-3xl relative overflow-hidden group hover:shadow-lg hover:border-accent transition bg-gradient-to-br from-bg to-accent/5" data-reveal="zoom" style="--reveal-delay: 240ms;">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-white rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110 shadow-sm border-b border-l border-accent/20"></div>
+                    <h3 class="text-xl font-bold mb-4 relative z-10 text-accentDark">Сфере услуг</h3>
+                    <p class="text-sm text-dark relative z-10 leading-relaxed">Показывайте кейсы, отзывы и формируйте высокое доверие еще до первого звонка.</p>
+                </div>
+                <!-- Card -->
+                <div class="bg-bg border border-gray-200 p-8 rounded-3xl relative overflow-hidden group hover:shadow-lg transition" data-reveal="zoom" style="--reveal-delay: 360ms;">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-white rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110 shadow-sm border-b border-l border-gray-100"></div>
+                    <h3 class="text-xl font-bold mb-4 relative z-10 text-dark">B2B сектор</h3>
+                    <p class="text-sm text-textMain relative z-10 leading-relaxed">Собирайте контакты ЛПР и планомерно утепляйте их профессиональным контентом.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ЭКРАН 5: Отстройка от конкурентов (Почему вы) -->
+    <section class="py-20 lg:py-32">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                
+                <div data-reveal="left">
+                    <div class="text-accentDark font-bold tracking-widest text-sm mb-4 uppercase">Strategy + Traffic + Funnel</div>
+                    <h2 class="text-3xl lg:text-5xl font-bold mb-6 text-dark">Почему за трафиком приходят в <span>TARGET FAMILY</span></h2>
+                    <p class="text-lg text-textMain mb-8 leading-relaxed">
+                        Вы получаете систему, а не слепую настройку рекламы. Мой главный принцип: я не конвейер. Я беру в работу только один проект за раз и погружаюсь в него на 100%. Никакого жонглирования десятком клиентов.
+                    </p>
+
+                    <ul class="space-y-5 mb-10">
+                        <li class="flex items-start">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center mt-1 mr-4">
+                                <svg class="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-dark text-lg">Не льём в пустоту</h4>
+                                <p class="text-sm text-textMain mt-1">Каждый клик должен быть оцифрован и понятен.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center mt-1 mr-4">
+                                <svg class="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-dark text-lg">Лично веду проект</h4>
+                                <p class="text-sm text-textMain mt-1">Вы общаетесь напрямую со мной, а не с менеджером-стажером.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center mt-1 mr-4">
+                                <svg class="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-dark text-lg">Думаем аудиторией</h4>
+                                <p class="text-sm text-textMain mt-1">Пишем тексты и делаем креативы, которые реально цепляют.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center mt-1 mr-4">
+                                <svg class="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-dark text-lg">Соединяем маркетинг и аналитику</h4>
+                                <p class="text-sm text-textMain mt-1">Решения принимаются только на основе твердых цифр.</p>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <a href="#cta" class="inline-flex items-center text-accent font-semibold hover:text-accentDark transition group">
+                        Обсудить проект 
+                        <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                    </a>
+                </div>
+
+                <div class="relative h-[600px] lg:h-[700px] rounded-3xl overflow-hidden bg-surface border border-gray-200 p-4 hidden md:block shadow-lg" data-reveal="right">
+                    <div class="w-full h-full rounded-2xl overflow-hidden relative bg-bg">
+                        <!-- КОММЕНТАРИЙ ДЛЯ ОБРАБОТКИ: Учитывая, что костюм синий, а фон страницы светлый, рекомендую в редакторе вырезать синий фон оригинального фото и заменить его на очень светлый серый или чисто белый. Букву "S" сзади можно сделать объемной белой или светло-зеленой. -->
+                        <img src="Костя 1.png" alt="Target Family" class="w-full h-full object-cover" loading="lazy">
+                        <div class="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent opacity-50"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ЭКРАН 6: Процесс и ожидания -->
+    <section id="process" class="py-20 lg:py-32 bg-surface border-y border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mb-16 text-center mx-auto">
+                <h2 class="text-3xl lg:text-5xl font-bold mb-6 text-dark">Что вы получаете в <span class="text-accent">первый месяц</span></h2>
+                <p class="text-lg text-textMain">Сначала мы собираем рабочую связку, затем тестируем и усиливаем её по реальным данным. Никаких сказок про «золотые горы за 3 дня» — только прозрачная системная работа.</p>
+            </div>
+
+            <!-- Горизонтальный таймлайн -->
+            <div class="relative max-w-5xl mx-auto">
+                <div class="hidden lg:block absolute top-1/2 left-0 w-full h-0.5 bg-gray-200 -translate-y-1/2"></div>
+                
+                <div class="grid lg:grid-cols-5 gap-8 lg:gap-4 relative z-10">
+                    
+                    <!-- Шаг 1 -->
+                    <div class="relative flex flex-col items-center text-center" data-reveal="zoom" style="--reveal-delay: 0ms;">
+                        <div class="w-12 h-12 rounded-full bg-white border-2 border-accent flex items-center justify-center text-accent font-bold text-xl mb-4 lg:mb-6 shadow-[0_4px_15px_rgba(16,185,129,0.2)]">1</div>
+                        <h4 class="font-bold text-lg mb-2 text-dark">Стратегия</h4>
+                        <p class="text-xs text-textMain">Анализ, смыслы, план действий</p>
+                    </div>
+                    
+                    <!-- Шаг 2 -->
+                    <div class="relative flex flex-col items-center text-center" data-reveal="zoom" style="--reveal-delay: 90ms;">
+                        <div class="w-12 h-12 rounded-full bg-surface border-2 border-gray-200 flex items-center justify-center text-gray-400 font-bold text-xl mb-4 lg:mb-6 shadow-sm">2</div>
+                        <h4 class="font-bold text-lg mb-2 text-dark">Запуск</h4>
+                        <p class="text-xs text-textMain">Настройка Директ / ВК</p>
+                    </div>
+
+                    <!-- Шаг 3 -->
+                    <div class="relative flex flex-col items-center text-center" data-reveal="zoom" style="--reveal-delay: 180ms;">
+                        <div class="w-12 h-12 rounded-full bg-surface border-2 border-gray-200 flex items-center justify-center text-gray-400 font-bold text-xl mb-4 lg:mb-6 shadow-sm">3</div>
+                        <h4 class="font-bold text-lg mb-2 text-dark">Лендинг</h4>
+                        <p class="text-xs text-textMain">Сборка прогревающего экрана</p>
+                    </div>
+
+                    <!-- Шаг 4 -->
+                    <div class="relative flex flex-col items-center text-center" data-reveal="zoom" style="--reveal-delay: 270ms;">
+                        <div class="w-12 h-12 rounded-full bg-surface border-2 border-gray-200 flex items-center justify-center text-gray-400 font-bold text-xl mb-4 lg:mb-6 shadow-sm">4</div>
+                        <h4 class="font-bold text-lg mb-2 text-dark">MAX</h4>
+                        <p class="text-xs text-textMain">Подключение и интеграция</p>
+                    </div>
+
+                    <!-- Шаг 5 -->
+                    <div class="relative flex flex-col items-center text-center" data-reveal="zoom" style="--reveal-delay: 360ms;">
+                        <div class="w-12 h-12 rounded-full bg-surface border-2 border-gray-200 flex items-center justify-center text-gray-400 font-bold text-xl mb-4 lg:mb-6 shadow-sm">5</div>
+                        <h4 class="font-bold text-lg mb-2 text-dark">Аналитика</h4>
+                        <p class="text-xs text-textMain">Сквозной срез и оптимизация</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="mt-16 text-center">
+                <a href="#cta" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-dark rounded-full hover:bg-gray-800 transition shadow-lg">
+                    Запустить систему
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ЭКРАН 7: Финальный призыв (Контакты и быстрый старт) -->
+    <section id="cta" class="py-20 lg:py-32 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-surface rounded-[2.5rem] overflow-hidden border border-gray-200 relative shadow-2xl shadow-gray-200">
+                
+                <div class="grid lg:grid-cols-2">
+                    <!-- Левая часть: Форма -->
+                    <div class="p-10 lg:p-16 flex flex-col justify-center bg-white relative z-10">
+                        <h2 class="text-3xl lg:text-4xl font-bold mb-4 text-dark">Получите план запуска <span class="text-accent">под ваш проект</span></h2>
+                        <p class="text-textMain mb-10 leading-relaxed">
+                            Никаких долгих и нудных брифов. Давайте просто созвонимся или спишемся, по-человечески обсудим ваши задачи и наметим стратегию. Выберите удобный способ связи:
+                        </p>
+
+                        <div class="flex flex-col sm:flex-row gap-4 mb-10">
+                            <a href="https://t.me/your_telegram" target="_blank" class="flex-1 inline-flex items-center justify-center px-6 py-4 text-sm font-bold text-white bg-[#0088cc] hover:bg-[#0077b3] rounded-2xl transition shadow-md">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/></svg>
+                                Написать в Telegram
+                            </a>
+                            <a href="https://t.me/your_bot" target="_blank" class="flex-1 inline-flex items-center justify-center px-6 py-4 text-sm font-bold text-dark bg-bg hover:bg-gray-100 rounded-2xl transition border border-gray-200 shadow-sm">
+                                Запустить бота
+                            </a>
+                        </div>
+
+                        <div class="relative">
+                            <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                                <div class="w-full border-t border-gray-200"></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-2 bg-white text-gray-400">Или оставьте заявку</span>
+                            </div>
+                        </div>
+
+                        <form class="mt-8 space-y-4">
+                            <div>
+                                <input type="text" placeholder="Ваше имя" class="w-full px-5 py-4 bg-bg border border-gray-200 rounded-2xl focus:outline-none focus:border-accent text-dark placeholder-gray-400 transition shadow-inner">
+                            </div>
+                            <div>
+                                <input type="tel" placeholder="Номер телефона" class="w-full px-5 py-4 bg-bg border border-gray-200 rounded-2xl focus:outline-none focus:border-accent text-dark placeholder-gray-400 transition shadow-inner">
+                            </div>
+                            <button type="button" class="w-full px-8 py-4 text-base font-bold text-white bg-accent rounded-2xl hover:bg-accentDark transition shadow-[0_8px_20px_rgba(16,185,129,0.3)]">
+                                Жду звонка
+                            </button>
+                            <p class="text-xs text-gray-400 text-center mt-4">
+                                Свяжусь с вами и подготовлю предварительный план запуска. Без агрессивных продаж в лоб.
+                            </p>
+                        </form>
+                    </div>
+
+                    <!-- Правая часть: Фотография -->
+                    <div class="hidden lg:block relative min-h-[500px]">
+                        <!-- КОММЕНТАРИЙ ДЛЯ ОБРАБОТКИ: Фотография на яхте отлично вписывается в светлую тему, так как несет светлое настроение. Сделайте легкую цветокоррекцию (выровнять баланс белого, сделать воду ярче), чтобы она смотрелась журнально. -->
+                        <img src="Костя 3.png" alt="Target Family Founder Lifestyle" class="absolute inset-0 w-full h-full object-cover" loading="lazy">
+                        <div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/50 to-transparent"></div>
+                        
+                        <div class="absolute bottom-10 right-10 bg-white/90 backdrop-blur-md border border-gray-200 p-6 rounded-3xl shadow-xl">
+                            <div class="text-sm text-textMain mb-1">Прямой контакт</div>
+                            <div class="text-2xl font-bold text-dark">+7 (000) 000-00-00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 border-t border-gray-200 bg-surface text-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-sm text-gray-400">© 2026 TARGET FAMILY. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script>
+        (() => {
+            const revealItems = document.querySelectorAll('[data-reveal]');
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            if (reduceMotion || !('IntersectionObserver' in window)) {
+                revealItems.forEach((item) => item.classList.add('is-visible'));
+                return;
+            }
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.16,
+                rootMargin: '0px 0px -8% 0px'
+            });
+
+            revealItems.forEach((item) => observer.observe(item));
+        })();
+    </script>
+</body>
+</html>
