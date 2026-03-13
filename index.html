@@ -1841,8 +1841,8 @@
                 margin-bottom: 2rem !important;
             }
 
-            #problem .grid.lg\\:grid-cols-\\[1\\.02fr_0\\.98fr\\],
-            #solution .grid.lg\\:grid-cols-2,
+            #problem .grid.lg\:grid-cols-\[1\.02fr_0\.98fr\],
+            #solution .grid.lg\:grid-cols-2,
             #process .relative.max-w-5xl {
                 gap: 1.2rem !important;
             }
@@ -1899,7 +1899,7 @@
                 gap: 10px;
             }
 
-            #process .grid.lg\\:grid-cols-4 {
+            #process .grid.lg\:grid-cols-4 {
                 gap: 1rem;
             }
 
@@ -1922,7 +1922,7 @@
                 padding: 1.4rem 1rem;
             }
 
-            #cta .flex.flex-col.sm\\:flex-row {
+            #cta .flex.flex-col.sm\:flex-row {
                 gap: 0.75rem !important;
                 margin-bottom: 1.5rem !important;
             }
@@ -1971,15 +1971,14 @@
         .text-white, .cta-pulse, .cta-pulse *, .floating-cta * { color: #ffffff !important; }
         .text-textMain { color: #334155 !important; }
         
-        button, .cta-pulse, .submit-btn, .btn-primary {
+        button, .cta-pulse, .submit-btn, .btn-primary, button * {
             color: #ffffff !important;
         }
 
     </style>
 </head>
 
-<body class="relative overflow-x-hidden selection:bg-accent selection:text-white">
-
+<body class="relative overflow-x-hidden selection:bg-accent selection:text-white"><div class="target-family-tilda-wrapper selection:bg-accent selection:text-white" style="overflow-x: clip; width: 100%; max-width: 100%; position: relative; padding-bottom: 90px; background-color: #F8FAFC; color: #334155;">
     <div class="glow-bg"></div>
     <div class="glow-bg-2"></div>
     <div class="mesh-overlay"></div>
@@ -2064,46 +2063,23 @@
                         <div class="hero-flow-stack">
                             <div class="hero-flow-row" style="--flow-delay: 0s;">
                                 <div class="hero-flow-chip hero-flow-chip--source">
-                                    <span class="hero-flow-chip__eyebrow">Источник трафика</span>
-                                    <span class="hero-flow-chip__title">Яндекс</span>
-                                    <span class="hero-flow-chip__caption">Холодный переход из Яндекс.Директа переводим в
-                                        управляемую подписку.</span>
+                                    <span class="hero-flow-chip__eyebrow">Источники трафика</span>
+                                    <span class="hero-flow-chip__title">Яндекс и ВК</span>
+                                    <span class="hero-flow-chip__caption">Забираем горячую аудиторию из Директа и холодный трафик из ВКонтакте, направляя их в правильную воронку.</span>
                                 </div>
                                 <div class="hero-flow-rail" aria-hidden="true"></div>
                                 <div class="hero-flow-chip hero-flow-chip--target">
                                     <span class="hero-flow-chip__eyebrow">Точка подписки</span>
                                     <span class="hero-flow-chip__title">MAX</span>
-                                    <span class="hero-flow-chip__caption">Подписка после понятного первого касания, а не
-                                        прямым сливом трафика.</span>
-                                </div>
-                            </div>
-
-                            <div class="hero-flow-row" style="--flow-delay: 1.35s;">
-                                <div class="hero-flow-chip hero-flow-chip--source">
-                                    <span class="hero-flow-chip__eyebrow">Источник трафика</span>
-                                    <span class="hero-flow-chip__title">ВКонтакте</span>
-                                    <span class="hero-flow-chip__caption">Рекламный клик не теряется, а доходит до
-                                        подписки через прогрев и смысл.</span>
-                                </div>
-                                <div class="hero-flow-rail" aria-hidden="true"></div>
-                                <div class="hero-flow-chip hero-flow-chip--target">
-                                    <span class="hero-flow-chip__eyebrow">Точка подписки</span>
-                                    <span class="hero-flow-chip__title">MAX</span>
-                                    <span class="hero-flow-chip__caption">Одна точка назначения для базы, контента,
-                                        доверия и дальнейшей заявки.</span>
+                                    <span class="hero-flow-chip__caption">Единая централизованная база. Подписка после понятного касания, глубокий прогрев контентом и переход в заявку.</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="glass-card rounded-[1.75rem] p-5 md:p-6 hero-flow-summary">
-                            <div class="text-xs uppercase tracking-[0.24em] text-textMain">Ключевые маршруты</div>
+                            <div class="text-xs uppercase tracking-[0.24em] text-textMain">Ключевой маршрут</div>
                             <div class="hero-flow-summary__row">
-                                <span>Яндекс</span>
-                                <span class="hero-flow-summary__arrow">→</span>
-                                <span class="hero-flow-summary__target">MAX</span>
-                            </div>
-                            <div class="hero-flow-summary__row">
-                                <span>ВКонтакте</span>
+                                <span>Яндекс.Директ и ВКонтакте</span>
                                 <span class="hero-flow-summary__arrow">→</span>
                                 <span class="hero-flow-summary__target">MAX</span>
                             </div>
@@ -2930,6 +2906,6 @@
                 });
             })();
     </script>
+</div>
 </body>
-
 </html>
